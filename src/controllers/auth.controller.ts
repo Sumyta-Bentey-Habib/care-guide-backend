@@ -68,3 +68,41 @@ export const logout = (_req: Request, res: Response): void => {
     message: 'Logout successful',
   });
 };
+
+// GET /api/auth/me
+export const getMe = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> => {
+  try {
+    if (!req.userId) {
+      res.status(401).json({
+        success: false,
+        message: "Authentication required",
+      });
+      return;
+    }
+
+    const user = await User.findById(req.userId).select("name email");
+
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "User no longer exists",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
