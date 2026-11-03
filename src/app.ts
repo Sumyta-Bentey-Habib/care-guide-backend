@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import authRoutes from './routes/auth.routes.js';
 
 const app = express();
 
@@ -15,6 +16,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get("/api/health", (_req, res) => {
