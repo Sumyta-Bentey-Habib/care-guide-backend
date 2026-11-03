@@ -6,6 +6,8 @@ import authRoutes from './routes/auth.routes.js';
 import notFound from './middlewares/notFound.middleware.js';
 import errorHandler from './middlewares/error.middleware.js';
 import doctorRoutes from './routes/doctor.routes.js';
+import patientRoutes from './routes/patient.routes.js';
+import doctorPatientRoutes from './routes/doctor-patient.routes.js';
 const app = express();
 
 // Middleware
@@ -31,6 +33,8 @@ app.get('/api/health', (_req, res) => {
 // API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
+app.use('/api/patients', patientRoutes);
+app.use('/api/doctors/:doctorId/patients', doctorPatientRoutes);
 
 // Handle unknown routes
 app.use(notFound);
