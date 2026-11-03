@@ -8,6 +8,7 @@ import errorHandler from './middlewares/error.middleware.js';
 import doctorRoutes from './routes/doctor.routes.js';
 import patientRoutes from './routes/patient.routes.js';
 import doctorPatientRoutes from './routes/doctor-patient.routes.js';
+import dashboardRoutes from './routes/dashboard.routes.js';
 const app = express();
 
 // Middleware
@@ -35,6 +36,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/patients', patientRoutes);
 app.use('/api/doctors/:doctorId/patients', doctorPatientRoutes);
+app.use('/api/dashboard', dashboardRoutes);
 
 // Handle unknown routes
 app.use(notFound);
