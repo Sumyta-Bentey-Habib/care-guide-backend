@@ -47,6 +47,12 @@ const doctorSchema = new Schema<IDoctor>(
   }
 );
 
+// Indexes for doctor filtering and sorting.
+
+doctorSchema.index({ specialization: 1 });
+doctorSchema.index({ hospital: 1 });
+doctorSchema.index({ createdAt: -1 });
+
 const Doctor = model<IDoctor>('Doctor', doctorSchema);
 
 export default Doctor;

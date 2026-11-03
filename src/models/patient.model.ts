@@ -55,6 +55,12 @@ const patientSchema = new Schema<IPatient>(
   }
 );
 
+// Indexes for patient queries.
+patientSchema.index({ doctorId: 1, createdAt: -1 });
+patientSchema.index({ condition: 1 });
+patientSchema.index({ createdAt: -1 });
+
 const Patient = model<IPatient>('Patient', patientSchema);
+
 
 export default Patient;
