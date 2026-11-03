@@ -1,8 +1,11 @@
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import authRoutes from './routes/auth.routes.js';
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
 
+import authRoutes from './routes/auth.routes.js';
+import notFound from './middlewares/notFound.middleware.js';
+import errorHandler from './middlewares/error.middleware.js';
+import doctorRoutes from './routes/doctor.routes.js';
 const app = express();
 
 // Middleware
@@ -12,19 +15,27 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "http://localhost:3000",
+    origin: process.env.CLIENT_URL || 'http://localhost:3000',
     credentials: true,
   })
 );
 
-app.use('/api/auth', authRoutes);
-
 // Health check
-app.get("/api/health", (_req, res) => {
+app.get('/api/health', (_req, res) => {
   res.status(200).json({
     success: true,
-    message: "Doctor Tracker API is running",
+    message: 'Doctor Tracker API is running',
   });
 });
+
+// API routes
+app.use('/api/auth', authRoutes);
+app.use('/api/doctors', doctorRoutes);
+
+// Handle unknown routes
+app.use(notFound);
+
+// Centralized error handler (must be last)
+app.use(errorHandler);
 
 export default app;
