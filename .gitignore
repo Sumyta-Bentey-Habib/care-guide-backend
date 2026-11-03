@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+
+# Production Build
+dist/
+build/
+
+# Environment Variables & Secrets
+.env
+.env.*
+!.env.example
+
+# Logs & Debug
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# OS Files (macOS & Windows)
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# IDE & Editor Settings
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# TypeScript & Test Cache
+*.tsbuildinfo
+coverage/
+.nyc_output/
+.temp/
+.tmp/
