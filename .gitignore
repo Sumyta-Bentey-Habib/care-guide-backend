@@ -1,5 +1,6 @@
-# Dependencies
+# Dependencies & Package Managers
 node_modules/
+.pnpm-store/
 
 # Production Build
 dist/
