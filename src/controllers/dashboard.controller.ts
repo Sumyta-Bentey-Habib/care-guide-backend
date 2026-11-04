@@ -25,37 +25,29 @@ export const getDashboardStats = async (
       Patient.countDocuments(),
 
       // Number of patients assigned to each doctor.
-      Patient.aggregate([
-        {
-          $group: {
-            _id: '$doctorId',
-            totalPatients: { $sum: 1 },
-          },
-        },
+      Doctor.aggregate([
         {
           $lookup: {
-            from: Doctor.collection.name,
+            from: Patient.collection.name,
             localField: '_id',
-            foreignField: '_id',
-            as: 'doctor',
+            foreignField: 'doctorId',
+            as: 'patients',
           },
-        },
-        {
-          $unwind: '$doctor',
         },
         {
           $project: {
             _id: 0,
-            doctorId: '$doctor._id',
-            doctorName: '$doctor.name',
-            specialization: '$doctor.specialization',
-            hospital: '$doctor.hospital',
-            totalPatients: 1,
+            doctorId: '$_id',
+            doctorName: '$name',
+            specialization: '$specialization',
+            hospital: '$hospital',
+            totalPatients: { $size: '$patients' },
           },
         },
         {
           $sort: {
             totalPatients: -1,
+            doctorName: 1,
           },
         },
       ]),

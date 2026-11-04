@@ -214,6 +214,7 @@ export const createPatient = async (
 };
 
 // GET /api/patients/:id
+// GET /api/doctors/:doctorId/patients/:patientId
 // Retrieve one patient by ID.
 export const getPatientById = async (
   req: Request,
@@ -221,7 +222,8 @@ export const getPatientById = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
+    const doctorId = getRouteParam(req.params.doctorId);
+    const id = getRouteParam(req.params.patientId || req.params.id);
 
     if (!id || !mongoose.isValidObjectId(id)) {
       res.status(400).json({
@@ -231,14 +233,29 @@ export const getPatientById = async (
       return;
     }
 
-    const patient = await Patient.findById(id)
+    if (doctorId && !mongoose.isValidObjectId(doctorId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid doctor ID',
+      });
+      return;
+    }
+
+    const query: { _id: string; doctorId?: string } = { _id: id };
+    if (doctorId) {
+      query.doctorId = doctorId;
+    }
+
+    const patient = await Patient.findOne(query)
       .populate('doctorId', 'name specialization hospital')
       .lean();
 
     if (!patient) {
       res.status(404).json({
         success: false,
-        message: 'Patient not found',
+        message: doctorId
+          ? 'Patient not found under this doctor'
+          : 'Patient not found',
       });
       return;
     }
@@ -253,6 +270,7 @@ export const getPatientById = async (
 };
 
 // PUT /api/patients/:id
+// PUT /api/doctors/:doctorId/patients/:patientId
 // Update existing patient information.
 export const updatePatient = async (
   req: Request,
@@ -260,7 +278,8 @@ export const updatePatient = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
+    const doctorId = getRouteParam(req.params.doctorId);
+    const id = getRouteParam(req.params.patientId || req.params.id);
 
     if (!id || !mongoose.isValidObjectId(id)) {
       res.status(400).json({
@@ -270,8 +289,21 @@ export const updatePatient = async (
       return;
     }
 
-    const patient = await Patient.findByIdAndUpdate(
-      id,
+    if (doctorId && !mongoose.isValidObjectId(doctorId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid doctor ID',
+      });
+      return;
+    }
+
+    const query: { _id: string; doctorId?: string } = { _id: id };
+    if (doctorId) {
+      query.doctorId = doctorId;
+    }
+
+    const patient = await Patient.findOneAndUpdate(
+      query,
       { $set: req.body },
       {
         new: true,
@@ -282,7 +314,9 @@ export const updatePatient = async (
     if (!patient) {
       res.status(404).json({
         success: false,
-        message: 'Patient not found',
+        message: doctorId
+          ? 'Patient not found under this doctor'
+          : 'Patient not found',
       });
       return;
     }
@@ -298,6 +332,7 @@ export const updatePatient = async (
 };
 
 // DELETE /api/patients/:id
+// DELETE /api/doctors/:doctorId/patients/:patientId
 // Delete an existing patient.
 export const deletePatient = async (
   req: Request,
@@ -305,7 +340,8 @@ export const deletePatient = async (
   next: NextFunction
 ): Promise<void> => {
   try {
-    const id = getRouteParam(req.params.id);
+    const doctorId = getRouteParam(req.params.doctorId);
+    const id = getRouteParam(req.params.patientId || req.params.id);
 
     if (!id || !mongoose.isValidObjectId(id)) {
       res.status(400).json({
@@ -315,12 +351,27 @@ export const deletePatient = async (
       return;
     }
 
-    const patient = await Patient.findByIdAndDelete(id);
+    if (doctorId && !mongoose.isValidObjectId(doctorId)) {
+      res.status(400).json({
+        success: false,
+        message: 'Invalid doctor ID',
+      });
+      return;
+    }
+
+    const query: { _id: string; doctorId?: string } = { _id: id };
+    if (doctorId) {
+      query.doctorId = doctorId;
+    }
+
+    const patient = await Patient.findOneAndDelete(query);
 
     if (!patient) {
       res.status(404).json({
         success: false,
-        message: 'Patient not found',
+        message: doctorId
+          ? 'Patient not found under this doctor'
+          : 'Patient not found',
       });
       return;
     }

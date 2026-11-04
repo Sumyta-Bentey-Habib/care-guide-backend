@@ -13,10 +13,14 @@ type DoctorFilter = {
   $or?: Array<Partial<Record<keyof IDoctor, RegExp>>>;
   specialization?: RegExp;
   hospital?: RegExp;
+  createdAt?: {
+    $gte?: Date;
+    $lt?: Date;
+  };
 };
 
 // GET /api/doctors
-// Supports search, specialization, hospital, and pagination.
+// Supports search, specialization, hospital, date-wise filtering, and pagination.
 export const getDoctors = async (
   req: Request,
   res: Response,
@@ -29,6 +33,10 @@ export const getDoctors = async (
       typeof req.query.specialization === 'string' ? req.query.specialization.trim() : '';
 
     const hospital = typeof req.query.hospital === 'string' ? req.query.hospital.trim() : '';
+
+    const startDate = typeof req.query.startDate === 'string' ? req.query.startDate : '';
+
+    const endDate = typeof req.query.endDate === 'string' ? req.query.endDate : '';
 
     const requestedPage = Number(req.query.page);
     const requestedLimit = Number(req.query.limit);
@@ -61,6 +69,62 @@ export const getDoctors = async (
     // Filter by hospital.
     if (hospital) {
       filter.hospital = new RegExp(escapeRegex(hospital), 'i');
+    }
+
+    // Filter by doctor creation date.
+    if (startDate || endDate) {
+      const dateFilter: {
+        $gte?: Date;
+        $lt?: Date;
+      } = {};
+
+      if (startDate) {
+        const parsedStartDate = new Date(startDate);
+
+        if (
+          Number.isNaN(parsedStartDate.getTime()) ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(startDate) ||
+          parsedStartDate.toISOString().slice(0, 10) !== startDate
+        ) {
+          res.status(400).json({
+            success: false,
+            message: 'Invalid startDate. Use YYYY-MM-DD format.',
+          });
+          return;
+        }
+
+        dateFilter.$gte = parsedStartDate;
+      }
+
+      if (endDate) {
+        const parsedEndDate = new Date(endDate);
+
+        if (
+          Number.isNaN(parsedEndDate.getTime()) ||
+          !/^\d{4}-\d{2}-\d{2}$/.test(endDate) ||
+          parsedEndDate.toISOString().slice(0, 10) !== endDate
+        ) {
+          res.status(400).json({
+            success: false,
+            message: 'Invalid endDate. Use YYYY-MM-DD format.',
+          });
+          return;
+        }
+
+        // Include the complete end date.
+        parsedEndDate.setUTCDate(parsedEndDate.getUTCDate() + 1);
+        dateFilter.$lt = parsedEndDate;
+      }
+
+      if (dateFilter.$gte && dateFilter.$lt && dateFilter.$gte >= dateFilter.$lt) {
+        res.status(400).json({
+          success: false,
+          message: 'startDate must be before or equal to endDate',
+        });
+        return;
+      }
+
+      filter.createdAt = dateFilter;
     }
 
     const skip = (page - 1) * limit;
