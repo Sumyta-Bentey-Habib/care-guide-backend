@@ -14,8 +14,15 @@ declare global {
 
 const authenticate = (req: Request, res: Response, next: NextFunction): void => {
   try {
-    // Read JWT from the HTTP-only cookie
-    const token = req.cookies?.[authConfig.cookieName];
+    // Read JWT from HTTP-only cookie or Authorization Bearer header
+    const authHeader = req.headers.authorization;
+    const bearerToken =
+      typeof authHeader === 'string' && authHeader.startsWith('Bearer ')
+        ? authHeader.slice(7).trim()
+        : undefined;
+
+    const cookieToken = req.cookies?.[authConfig.cookieName];
+    const token = typeof cookieToken === 'string' && cookieToken ? cookieToken : bearerToken;
 
     if (!token || typeof token !== 'string') {
       res.status(401).json({

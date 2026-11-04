@@ -43,6 +43,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
     res.status(200).json({
       success: true,
       message: 'Login successful',
+      token,
       user: {
         id: user._id.toString(),
         name: user.name,
@@ -56,12 +57,7 @@ export const login = async (req: Request, res: Response, next: NextFunction): Pr
 
 // POST /api/auth/logout
 export const logout = (_req: Request, res: Response): void => {
-  res.clearCookie(authConfig.cookieName, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: 'lax',
-    path: '/',
-  });
+  res.clearCookie(authConfig.cookieName, cookieOptions);
 
   res.status(200).json({
     success: true,
